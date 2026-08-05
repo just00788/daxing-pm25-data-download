@@ -27,7 +27,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gdal-bin libgdal-dev unzip zip
+          sudo apt-get install -y gdal-bin libgdal-dev unzip zip curl
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -50,7 +50,7 @@ jobs:
       - name: Download, clip, validate and package
         id: pipeline
         continue-on-error: true
-        run: python scripts/run_pipeline.py
+        run: python scripts/run_pipeline_v2.py
 
       - name: Show package inventory
         if: always()
@@ -64,7 +64,7 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: daxing-pm25-auxiliary-data-core
+          name: daxing-pm25-auxiliary-data-final
           path: release/daxing_pm25_auxiliary_data_core.zip
           if-no-files-found: error
           retention-days: 30
@@ -75,11 +75,12 @@ jobs:
         continue-on-error: true
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: data-core-${{ github.run_number }}
-          name: Daxing PM2.5 auxiliary data core ${{ github.run_number }}
+          tag_name: data-final-${{ github.run_number }}
+          name: Daxing PM2.5 auxiliary data final ${{ github.run_number }}
           body: |
-            Automatically downloaded, clipped and validated public spatial auxiliary datasets for the Daxing PM2.5 project.
-            See DATA_MANIFEST inside the ZIP for exact success/failure status and limitations.
+            Actual downloaded and study-area-clipped public spatial auxiliary datasets.
+            Population, NDVI and land-cover ratio checks are mandatory before publication.
+            See DATA_MANIFEST and SHA256SUMS inside the ZIP.
           files: release/daxing_pm25_auxiliary_data_core.zip
 
       - name: Write machine-readable run status
@@ -103,7 +104,7 @@ jobs:
             "artifact_outcome": "${ARTIFACT_OUTCOME}",
             "release_outcome": "${RELEASE_OUTCOME}",
             "package_size_bytes": ${PACKAGE_SIZE},
-            "release_url": "https://github.com/${GITHUB_REPOSITORY}/releases/tag/data-core-${GITHUB_RUN_NUMBER}",
+            "release_url": "https://github.com/${GITHUB_REPOSITORY}/releases/tag/data-final-${GITHUB_RUN_NUMBER}",
             "actions_url": "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}",
             "updated_utc": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           }
