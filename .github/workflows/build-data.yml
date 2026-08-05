@@ -1,0 +1,76 @@
+name: Build Daxing PM2.5 auxiliary data package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-data.yml"
+      - "scripts/**"
+      - "inputs/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUNBUFFERED: "1"
+  GDAL_DISABLE_READDIR_ON_OPEN: "EMPTY_DIR"
+  CPL_VSIL_CURL_ALLOWED_EXTENSIONS: ".tif,.tiff"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gdal-bin libgdal-dev unzip zip
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            numpy pandas requests shapely pyproj rasterio \
+            geopandas pyogrio pystac-client planetary-computer
+
+      - name: Decode project inputs
+        run: |
+          base64 --decode inputs/study_and_stations.zip.b64 > inputs/study_and_stations.zip
+          unzip -o inputs/study_and_stations.zip -d inputs
+          ls -lah inputs
+
+      - name: Download, clip, validate and package
+        run: python scripts/run_pipeline.py
+
+      - name: Show package inventory
+        if: always()
+        run: |
+          find output -maxdepth 4 -type f -printf '%p %s bytes\n' | sort || true
+          ls -lah release || true
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: daxing-pm25-auxiliary-data-core
+          path: release/daxing_pm25_auxiliary_data_core.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: data-core-${{ github.run_number }}
+          name: Daxing PM2.5 auxiliary data core ${{ github.run_number }}
+          body: |
+            Automatically downloaded, clipped and validated public spatial auxiliary datasets for the Daxing PM2.5 project.
+            See DATA_MANIFEST inside the ZIP for exact success/failure status and limitations.
+          files: release/daxing_pm25_auxiliary_data_core.zip
