@@ -49,6 +49,8 @@ jobs:
           ls -lah inputs
 
       - name: Download, clip, validate and package
+        id: pipeline
+        continue-on-error: true
         run: python scripts/run_pipeline.py
 
       - name: Show package inventory
@@ -58,6 +60,9 @@ jobs:
           ls -lah release || true
 
       - name: Upload workflow artifact
+        id: artifact
+        if: steps.pipeline.outcome == 'success'
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: daxing-pm25-auxiliary-data-core
@@ -66,6 +71,9 @@ jobs:
           retention-days: 30
 
       - name: Publish release asset
+        id: release
+        if: steps.pipeline.outcome == 'success'
+        continue-on-error: true
         uses: softprops/action-gh-release@v2
         with:
           tag_name: data-core-${{ github.run_number }}
@@ -74,3 +82,39 @@ jobs:
             Automatically downloaded, clipped and validated public spatial auxiliary datasets for the Daxing PM2.5 project.
             See DATA_MANIFEST inside the ZIP for exact success/failure status and limitations.
           files: release/daxing_pm25_auxiliary_data_core.zip
+
+      - name: Write machine-readable run status
+        if: always()
+        env:
+          PIPELINE_OUTCOME: ${{ steps.pipeline.outcome }}
+          ARTIFACT_OUTCOME: ${{ steps.artifact.outcome }}
+          RELEASE_OUTCOME: ${{ steps.release.outcome }}
+        run: |
+          mkdir -p status
+          PACKAGE_SIZE=0
+          if [ -f release/daxing_pm25_auxiliary_data_core.zip ]; then
+            PACKAGE_SIZE=$(stat -c %s release/daxing_pm25_auxiliary_data_core.zip)
+          fi
+          cat > status/latest.json <<EOF
+          {
+            "run_id": "${GITHUB_RUN_ID}",
+            "run_number": "${GITHUB_RUN_NUMBER}",
+            "commit_sha": "${GITHUB_SHA}",
+            "pipeline_outcome": "${PIPELINE_OUTCOME}",
+            "artifact_outcome": "${ARTIFACT_OUTCOME}",
+            "release_outcome": "${RELEASE_OUTCOME}",
+            "package_size_bytes": ${PACKAGE_SIZE},
+            "release_url": "https://github.com/${GITHUB_REPOSITORY}/releases/tag/data-core-${GITHUB_RUN_NUMBER}",
+            "actions_url": "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}",
+            "updated_utc": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add status/latest.json
+          git commit -m "Record data build status for run ${GITHUB_RUN_NUMBER}" || true
+          git push
+
+      - name: Fail workflow when package was not published
+        if: steps.pipeline.outcome != 'success' || steps.release.outcome != 'success'
+        run: exit 1
