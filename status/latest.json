@@ -1,12 +1,13 @@
 {
-  "run_id": "30969850890",
-  "run_number": "5",
-  "commit_sha": "662d15c2d90b38027ed3bf2f87d0ebf95aad0b64",
+  "run_id": "30971098017",
+  "run_number": "7",
+  "commit_sha": "3361e497f167af38a5005042e19f535a0112baef",
+  "pipeline_version": "v3",
   "pipeline_outcome": "success",
   "artifact_outcome": "success",
   "release_outcome": "success",
-  "package_size_bytes": 7863861,
-  "release_url": "https://github.com/just00788/daxing-pm25-data-download/releases/tag/data-final-5",
-  "actions_url": "https://github.com/just00788/daxing-pm25-data-download/actions/runs/30969850890",
-  "updated_utc": "2026-08-05T02:54:41Z"
+  "package_size_bytes": 8809293,
+  "release_url": "https://github.com/just00788/daxing-pm25-data-download/releases/tag/data-final-v3-7",
+  "actions_url": "https://github.com/just00788/daxing-pm25-data-download/actions/runs/30971098017",
+  "updated_utc": "2026-08-05T03:26:07Z"
 }
