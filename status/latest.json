@@ -1,12 +1,12 @@
 {
-  "run_id": "30969463525",
-  "run_number": "2",
-  "commit_sha": "d807a0a64647b099666c16c19b28fbbe61159c13",
-  "pipeline_outcome": "skipped",
-  "artifact_outcome": "skipped",
-  "release_outcome": "skipped",
-  "package_size_bytes": 0,
-  "release_url": "https://github.com/just00788/daxing-pm25-data-download/releases/tag/data-core-2",
-  "actions_url": "https://github.com/just00788/daxing-pm25-data-download/actions/runs/30969463525",
-  "updated_utc": "2026-08-05T02:29:37Z"
+  "run_id": "30969620372",
+  "run_number": "3",
+  "commit_sha": "40c1a1121911177bfb42ad164dce5637d84c2a70",
+  "pipeline_outcome": "success",
+  "artifact_outcome": "success",
+  "release_outcome": "success",
+  "package_size_bytes": 7740346,
+  "release_url": "https://github.com/just00788/daxing-pm25-data-download/releases/tag/data-core-3",
+  "actions_url": "https://github.com/just00788/daxing-pm25-data-download/actions/runs/30969620372",
+  "updated_utc": "2026-08-05T02:33:26Z"
 }
