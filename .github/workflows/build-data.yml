@@ -50,7 +50,7 @@ jobs:
       - name: Download, clip, validate and package
         id: pipeline
         continue-on-error: true
-        run: python scripts/run_pipeline_v2.py
+        run: python scripts/run_pipeline_v3.py
 
       - name: Show package inventory
         if: always()
@@ -64,7 +64,7 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: daxing-pm25-auxiliary-data-final
+          name: daxing-pm25-auxiliary-data-final-v3
           path: release/daxing_pm25_auxiliary_data_core.zip
           if-no-files-found: error
           retention-days: 30
@@ -75,11 +75,11 @@ jobs:
         continue-on-error: true
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: data-final-${{ github.run_number }}
-          name: Daxing PM2.5 auxiliary data final ${{ github.run_number }}
+          tag_name: data-final-v3-${{ github.run_number }}
+          name: Daxing PM2.5 auxiliary data final v3 ${{ github.run_number }}
           body: |
             Actual downloaded and study-area-clipped public spatial auxiliary datasets.
-            Population, NDVI and land-cover ratio checks are mandatory before publication.
+            The release is created only after strict population, multi-date NDVI and land-cover validation.
             See DATA_MANIFEST and SHA256SUMS inside the ZIP.
           files: release/daxing_pm25_auxiliary_data_core.zip
 
@@ -100,11 +100,12 @@ jobs:
             "run_id": "${GITHUB_RUN_ID}",
             "run_number": "${GITHUB_RUN_NUMBER}",
             "commit_sha": "${GITHUB_SHA}",
+            "pipeline_version": "v3",
             "pipeline_outcome": "${PIPELINE_OUTCOME}",
             "artifact_outcome": "${ARTIFACT_OUTCOME}",
             "release_outcome": "${RELEASE_OUTCOME}",
             "package_size_bytes": ${PACKAGE_SIZE},
-            "release_url": "https://github.com/${GITHUB_REPOSITORY}/releases/tag/data-final-${GITHUB_RUN_NUMBER}",
+            "release_url": "https://github.com/${GITHUB_REPOSITORY}/releases/tag/data-final-v3-${GITHUB_RUN_NUMBER}",
             "actions_url": "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}",
             "updated_utc": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           }
@@ -112,7 +113,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add status/latest.json
-          git commit -m "Record data build status for run ${GITHUB_RUN_NUMBER}" || true
+          git commit -m "Record v3 data build status for run ${GITHUB_RUN_NUMBER}" || true
           git push
 
       - name: Fail workflow when package was not published
